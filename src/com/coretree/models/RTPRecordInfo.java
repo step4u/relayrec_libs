@@ -13,6 +13,8 @@ import com.coretree.wave.WaveFormat;;
 
 public class RTPRecordInfo implements Closeable
 {
+	private int dataSize = 0;
+	private int previousDataSize = 0;
 	private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     private final Lock r = rwl.readLock();
     private final Lock w = rwl.writeLock();
@@ -32,7 +34,7 @@ public class RTPRecordInfo implements Closeable
 	private WaveFileWriter writer = null;
 	private WaveFormat pcmFormat = new WaveFormat(8000, 16, 1);
 
-	private final int timerInterval = 3000;
+	private final int timerInterval = 2000;
 	private final int endtimerInterval = 15000;
 
 	public RTPRecordInfo(WaveFormat _codec, String savepath, String filename)
@@ -102,15 +104,15 @@ public class RTPRecordInfo implements Closeable
             return;
         }
 
-        if (endtimer != null)
-        {
-            endtimer.cancel();
-            endtimer.purge();
-            
-            Endtimer_Elapsed endtimer_Elapsed = new Endtimer_Elapsed();
-            endtimer = new Timer();
-            endtimer.schedule(endtimer_Elapsed, endtimerInterval, endtimerInterval);
-        }
+//        if (endtimer != null)
+//        {
+//            endtimer.cancel();
+//            endtimer.purge();
+//            
+//            Endtimer_Elapsed endtimer_Elapsed = new Endtimer_Elapsed();
+//            endtimer = new Timer();
+//            endtimer.schedule(endtimer_Elapsed, endtimerInterval, endtimerInterval);
+//        }
 
         if (obj.size == 0) return;
 
@@ -308,7 +310,6 @@ public class RTPRecordInfo implements Closeable
 	}
 
 	private int headersize = 12;
-
 	private byte[] Mixing(List<ReceivedRTP> linin, List<ReceivedRTP> linout, ReceivedRTP item, DelayedMsec delayedMsec)
 	{
 		byte[] mixedbytes = null;
@@ -423,7 +424,6 @@ public class RTPRecordInfo implements Closeable
 				{
 					r.unlock();
 				}
-			
 			}
 			catch (NoSuchElementException e)
 			{
@@ -446,7 +446,6 @@ public class RTPRecordInfo implements Closeable
 				{
 					r.unlock();
 				}
-				
 			}
 			catch (NoSuchElementException e)
 			{
@@ -592,20 +591,25 @@ public class RTPRecordInfo implements Closeable
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         
         try
 		{
 			this.writer.flush();
+			dataSize += buff.length;
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
+    
+//    private void Timer_Update()
+//    {
+//    	Timer_Elapsed timer_Elapsed = new Timer_Elapsed();
+//    	
+//    }
 
 	@Override
 	public void close() throws IOException
@@ -634,6 +638,12 @@ public class RTPRecordInfo implements Closeable
 		@Override
 		public void run()
 		{
+			if (previousDataSize < dataSize)
+			{
+				previousDataSize = dataSize;
+				return;
+			}
+			
 			MixRtp("final");
 			
 			try

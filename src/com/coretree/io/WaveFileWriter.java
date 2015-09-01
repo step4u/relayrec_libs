@@ -5,17 +5,23 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+
+import com.coretree.util.BitConverter;
 import com.coretree.wave.WaveFormat;
 import com.coretree.wave.WaveFormatEncoding;
 
 public class WaveFileWriter extends OutputStream {
+	private int headSize = 32;
+	private int headSizePos = 4;
 	private OutputStream outStream;
     private DataOutputStream writer;
     private long dataSizePos;
     private long factSampleCountPos;
-    private long dataChunkSize;
+    public int dataChunkSize = 0;
+    private int dataChunkSizePos = 28;
     private WaveFormat format;
     private String filename;
     
@@ -25,13 +31,25 @@ public class WaveFileWriter extends OutputStream {
         this.format = format;
         this.writer = new DataOutputStream(outStream);
         this.writer.writeBytes("RIFF");
-        this.writer.writeInt((int)0); // placeholder
+        this.writer.write(BitConverter.GetBytes(0), 0, 4);
         this.writer.writeBytes("WAVE");
         this.writer.writeBytes("fmt ");
-        this.writer = format.Serialize(this.writer);
+        
+        this.writer.write(BitConverter.GetBytes((int)16));
+        this.writer.write(BitConverter.GetBytes((short)format.waveFormatTag.GetValue()));
+        this.writer.write(BitConverter.GetBytes((short)format.channels));
+        this.writer.write(BitConverter.GetBytes((int)format.sampleRate));
+        this.writer.write(BitConverter.GetBytes((int)format.averageBytesPerSecond));
+        this.writer.write(BitConverter.GetBytes((short)format.blockAlign));
+        this.writer.write(BitConverter.GetBytes((short)format.bitsPerSample));
+        //this.writer.write(BitConverter.GetBytes((short)format.extraSize));
+        
+        //this.writer = format.Serialize(this.writer);
 
-        CreateFactChunk();
+        //CreateFactChunk();
         WriteDataChunkHeader();
+        
+        //this.close();
     }
     
     public WaveFileWriter(String filename, WaveFormat format) throws FileNotFoundException, IOException
@@ -40,21 +58,37 @@ public class WaveFileWriter extends OutputStream {
     	this.filename = filename;
     }
     
-	private void WriteDataChunkHeader() throws IOException
+	private void WriteDataChunkHeader()
     {
-        this.writer.write("data");
-        //dataSizePos = this.outStream.Position;
-        this.writer.write((int)0); // placeholder
+        try
+		{
+			this.writer.writeBytes("data");
+		}
+		catch (IOException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        
+        try
+		{
+			this.writer.write(BitConverter.GetBytes((int)0));
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
 	private void CreateFactChunk() throws IOException
     {
         if (HasFactChunk())
         {
-            this.writer.write("fact");
+            this.writer.writeBytes("fact");
             this.writer.write((int)4);
             //factSampleCountPos = this.outStream.Position;
-            this.writer.write((int)0); // number of samples
+            this.writer.write((int)0);
         }
     }
 
@@ -70,27 +104,41 @@ public class WaveFileWriter extends OutputStream {
     	UpdateHeader(writer);
     }
     
-    protected void UpdateHeader(OutputStreamWriter writer) throws IOException
+    protected void UpdateHeader(DataOutputStream writer) throws IOException
     {
         writer.flush();
-        UpdateRiffChunk(writer);
-        UpdateFactChunk(writer);
-        UpdateDataChunk(writer);
+        UpdateRiffChunk();
+        //UpdateFactChunk(writer);
+        UpdateDataChunk();
     }
     
-    private void UpdateDataChunk(OutputStreamWriter writer) throws IOException
+    private void UpdateDataChunk()
     {
         //writer.Seek((int)dataSizePos, SeekOrigin.Begin);
-        writer.write((int)dataChunkSize);
+        try
+		{
+			this.writer.write(BitConverter.GetBytes(dataChunkSize), dataChunkSizePos, 4);
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
-    private void UpdateRiffChunk(OutputStreamWriter writer)
+    private void UpdateRiffChunk()
     {
-        //writer.Seek(4, SeekOrigin.Begin);
-        //writer.write((int)(outStream.Length - 8));
+    	try
+		{
+			this.writer.write(BitConverter.GetBytes((int)(headSize + dataChunkSize - 8)), headSizePos, 4);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
     }
 
-    private void UpdateFactChunk(OutputStreamWriter writer) throws IOException
+    private void UpdateFactChunk(DataOutputStream writer) throws IOException
     {
         if (HasFactChunk())
         {

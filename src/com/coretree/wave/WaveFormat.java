@@ -3,6 +3,7 @@ package com.coretree.wave;
 import java.io.*;
 
 import com.coretree.exceptions.ArgumentOutOfRangeException;
+import com.coretree.util.BitConverter;
 
 public class WaveFormat {
     public WaveFormatEncoding waveFormatTag;
@@ -107,16 +108,16 @@ public class WaveFormat {
         return CreateCustomFormat(WaveFormatEncoding.MuLaw, sampleRate, channels, sampleRate * channels, channels, 8);
     }
     
-    public OutputStreamWriter Serialize(OutputStreamWriter writer) throws IOException
+    public DataOutputStream Serialize(DataOutputStream writer) throws IOException
     {
-        writer.write((int)(18 + extraSize));
-        writer.write((short)waveFormatTag.GetValue());
-        writer.write((short)channels);
-        writer.write((int)sampleRate);
-        writer.write((int)averageBytesPerSecond);
-        writer.write((short)blockAlign);
-        writer.write((short)bitsPerSample);
-        writer.write((short)extraSize);
+        writer.write(BitConverter.GetBytes((int)(18 + extraSize)));
+        writer.write(BitConverter.GetBytes((short)waveFormatTag.GetValue()));
+        writer.write(BitConverter.GetBytes((short)channels));
+        writer.write(BitConverter.GetBytes((int)sampleRate));
+        writer.write(BitConverter.GetBytes((int)averageBytesPerSecond));
+        writer.write(BitConverter.GetBytes((short)blockAlign));
+        writer.write(BitConverter.GetBytes((short)bitsPerSample));
+        writer.write(BitConverter.GetBytes((short)extraSize));
         
         return writer;
     }
