@@ -4,44 +4,41 @@ import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 import com.coretree.util.BitConverter;
 import com.coretree.wave.WaveFormat;
 import com.coretree.wave.WaveFormatEncoding;
 
-public class WaveFileWriter extends OutputStream {
-	private int headSize = 32;
+public class WaveFileWriter {
+	private int headSize = 36;
 	private int headSizePos = 4;
-	private OutputStream outStream;
-    private DataOutputStream writer;
+	private FileOutputStream outStream;
     private long dataSizePos;
     private long factSampleCountPos;
     public int dataChunkSize = 0;
     private int dataChunkSizePos = 28;
     private WaveFormat format;
     private String filename;
+    private long position = 0;
     
-    public WaveFileWriter(OutputStream outStream, WaveFormat format) throws IOException
+    public WaveFileWriter(FileOutputStream outstream, WaveFormat format) throws IOException
     {
-        this.outStream = outStream;
+        this.outStream = outstream;
         this.format = format;
-        this.writer = new DataOutputStream(outStream);
-        this.writer.writeBytes("RIFF");
-        this.writer.write(BitConverter.GetBytes(0), 0, 4);
-        this.writer.writeBytes("WAVE");
-        this.writer.writeBytes("fmt ");
+        this.outStream.write("RIFF".getBytes(), 0, 4);
+        this.outStream.write(BitConverter.GetBytes(0), 0, 4);
+        this.outStream.write("WAVE".getBytes(), 0, 4);
+        this.outStream.write("fmt ".getBytes(), 0, 4);
         
-        this.writer.write(BitConverter.GetBytes((int)16));
-        this.writer.write(BitConverter.GetBytes((short)format.waveFormatTag.GetValue()));
-        this.writer.write(BitConverter.GetBytes((short)format.channels));
-        this.writer.write(BitConverter.GetBytes((int)format.sampleRate));
-        this.writer.write(BitConverter.GetBytes((int)format.averageBytesPerSecond));
-        this.writer.write(BitConverter.GetBytes((short)format.blockAlign));
-        this.writer.write(BitConverter.GetBytes((short)format.bitsPerSample));
+        this.outStream.write(BitConverter.GetBytes((int)16), 0, 4);
+        this.outStream.write(BitConverter.GetBytes((short)format.waveFormatTag.GetValue()), 0, 2);
+        this.outStream.write(BitConverter.GetBytes((short)format.channels), 0, 2);
+        this.outStream.write(BitConverter.GetBytes((int)format.sampleRate), 0, 4);
+        this.outStream.write(BitConverter.GetBytes((int)format.averageBytesPerSecond), 0, 4);
+        this.outStream.write(BitConverter.GetBytes((short)format.blockAlign), 0, 2);
+        this.outStream.write(BitConverter.GetBytes((short)format.bitsPerSample), 0, 2);
         //this.writer.write(BitConverter.GetBytes((short)format.extraSize));
         
         //this.writer = format.Serialize(this.writer);
@@ -52,17 +49,19 @@ public class WaveFileWriter extends OutputStream {
         //this.close();
     }
     
+    
     public WaveFileWriter(String filename, WaveFormat format) throws FileNotFoundException, IOException
     {
     	this(new FileOutputStream(filename), format);
     	this.filename = filename;
     }
+
     
 	private void WriteDataChunkHeader()
     {
         try
 		{
-			this.writer.writeBytes("data");
+			this.outStream.write("data".getBytes(), 0, "data".getBytes().length);
 		}
 		catch (IOException e1)
 		{
@@ -72,7 +71,7 @@ public class WaveFileWriter extends OutputStream {
         
         try
 		{
-			this.writer.write(BitConverter.GetBytes((int)0));
+			this.outStream.write(BitConverter.GetBytes((int)0), 0, 4);
 		}
 		catch (IOException e)
 		{
@@ -85,10 +84,10 @@ public class WaveFileWriter extends OutputStream {
     {
         if (HasFactChunk())
         {
-            this.writer.writeBytes("fact");
-            this.writer.write((int)4);
+            this.outStream.write("fact".getBytes(), 0, 4);
+            this.outStream.write((int)4);
             //factSampleCountPos = this.outStream.Position;
-            this.writer.write((int)0);
+            this.outStream.write((int)0);
         }
     }
 
@@ -97,45 +96,36 @@ public class WaveFileWriter extends OutputStream {
         return format.waveFormatTag != WaveFormatEncoding.Pcm && format.bitsPerSample != 0;
     }
     
-    @Override
     public void flush() throws IOException
     {
-    	this.writer.flush();
-    	UpdateHeader(writer);
+    	this.outStream.flush();
+    	UpdateHeader();
     }
     
-    protected void UpdateHeader(DataOutputStream writer) throws IOException
+    protected void UpdateHeader() throws IOException
     {
-        writer.flush();
+    	outStream.flush();
         UpdateRiffChunk();
         //UpdateFactChunk(writer);
         UpdateDataChunk();
     }
     
-    private void UpdateDataChunk()
+    private void UpdateDataChunk() throws IOException
     {
-        //writer.Seek((int)dataSizePos, SeekOrigin.Begin);
-        try
-		{
-			this.writer.write(BitConverter.GetBytes(dataChunkSize), dataChunkSizePos, 4);
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    	FileChannel ch = this.outStream.getChannel();
+    	position = ch.position();
+    	ch.position(dataChunkSizePos);
+    	ch.write(ByteBuffer.wrap(BitConverter.GetBytes(dataChunkSize)));
+    	ch.position(position);
     }
 
-    private void UpdateRiffChunk()
+    private void UpdateRiffChunk() throws IOException
     {
-    	try
-		{
-			this.writer.write(BitConverter.GetBytes((int)(headSize + dataChunkSize - 8)), headSizePos, 4);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+    	FileChannel ch = this.outStream.getChannel();
+    	position = ch.position();
+    	ch.position(headSizePos);
+    	ch.write(ByteBuffer.wrap(BitConverter.GetBytes((int)(headSize + dataChunkSize - 8))));
+    	ch.position(position);
     }
 
     private void UpdateFactChunk(DataOutputStream writer) throws IOException
@@ -152,23 +142,16 @@ public class WaveFileWriter extends OutputStream {
         }
     }
     
-    @Override
-    public void write(byte[] data, int offset, int count) throws IOException
+    public void Write(byte[] data, int offset, int count) throws IOException
     {
-    	outStream.write(data, offset, count);
+    	this.outStream.write(data, offset, count);
         dataChunkSize += count;
     }
 
-	@Override
-	public void write(int b) throws IOException {
-		// TODO Auto-generated method stub
-	}
-	
-	@Override
 	public void close() throws IOException
 	{
 		this.flush();
-		if (this.writer != null)
-			this.writer.close();
+		if (this.outStream != null)
+			this.outStream.close();
 	}
 }

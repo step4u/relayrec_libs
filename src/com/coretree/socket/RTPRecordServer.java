@@ -167,7 +167,7 @@ public class RTPRecordServer extends Thread
 				RTPRecordInfo recInstance = new RTPRecordInfo(wavformat, String.format("%s\\%s", _option.saveDirectory, _datepath), _fileName);
 				recInstance.ext = rtp.ext;
 				recInstance.peer = rtp.peer;
-				recInstance.codec = wavformat;
+				//recInstance.codec = wavformat;
 				// recInstance.idx = ts.TotalMilliseconds;
 				recInstance.savepath = String.format("%s\\%s", _option.saveDirectory, _datepath);
 				recInstance.filename = _fileName;

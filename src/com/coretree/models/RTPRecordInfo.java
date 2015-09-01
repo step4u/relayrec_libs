@@ -34,8 +34,8 @@ public class RTPRecordInfo implements Closeable
 	private WaveFileWriter writer = null;
 	private WaveFormat pcmFormat = new WaveFormat(8000, 16, 1);
 
-	private final int timerInterval = 2000;
-	private final int endtimerInterval = 15000;
+	private final int timerInterval = 3000;
+	private final int endtimerInterval = 12000;
 
 	public RTPRecordInfo(WaveFormat _codec, String savepath, String filename)
 	{
@@ -45,10 +45,10 @@ public class RTPRecordInfo implements Closeable
 		codec = _codec;
 		listIn = new ArrayList<ReceivedRTP>();
 		listOut = new ArrayList<ReceivedRTP>();
-
+		
 		try
 		{
-			writer = new WaveFileWriter(String.format("%s\\%s", savepath, filename), pcmFormat);
+			writer = new WaveFileWriter(String.format("%s\\%s", savepath, filename), codec);
 		}
 		catch (FileNotFoundException e)
 		{
@@ -587,7 +587,7 @@ public class RTPRecordInfo implements Closeable
 
         try
 		{
-			this.writer.write(buff, 0, buff.length);
+			this.writer.Write(buff, 0, buff.length);
 		}
 		catch (IOException e)
 		{
@@ -649,6 +649,8 @@ public class RTPRecordInfo implements Closeable
 			try
 			{
 				close();
+				endtimer.cancel();
+				endtimer.purge();
 			}
 			catch (IOException e)
 			{
