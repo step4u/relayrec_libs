@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.nio.ByteOrder;
 import java.time.LocalDateTime;
@@ -32,7 +31,9 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 	
 	private DatagramSocket serverSocket;
 	private List<RTPRecordInfo> recordIngList;
+	
 	private Options _option;
+	private String OS = System.getProperty("os.name");
 
 	public RTPRecordServer()
 	{
@@ -140,9 +141,19 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 				df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 				String _datepath = localdatetime.format(df);
 
+				String _strformat = "%s/%s";
+				if (OS.contains("Windows"))
+				{
+					_strformat = "%s\\%s";
+				}
+				else
+				{
+					_strformat = "%s/%s";
+				}
+				
 				String _fileName = String.format("%s_%s_%s.wav", _header.trim(), rtp.ext.trim(), rtp.peer.trim());
 
-				 String _path = String.format("%s/%s", _option.saveDirectory, _datepath);
+				 String _path = String.format(_strformat, _option.saveDirectory, _datepath);
 				 
 				 File _dir = new File(_path);
 				 if (!_dir.exists())
@@ -150,12 +161,12 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 					 boolean result = _dir.mkdir();
 				 }
 
-				RTPRecordInfo recInstance = new RTPRecordInfo(wavformat, String.format("%s/%s", _option.saveDirectory, _datepath), _fileName);
+				RTPRecordInfo recInstance = new RTPRecordInfo(wavformat, String.format(_strformat, _option.saveDirectory, _datepath), _fileName);
 				recInstance.ext = rtp.ext;
 				recInstance.peer = rtp.peer;
 				//recInstance.codec = wavformat;
 				// recInstance.idx = ts.TotalMilliseconds;
-				recInstance.savepath = String.format("%s/%s", _option.saveDirectory, _datepath);
+				recInstance.savepath = String.format(_strformat, _option.saveDirectory, _datepath);
 				recInstance.filename = _fileName;
 
 				recInstance.Add(rtp);
@@ -177,6 +188,8 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 	public void eventReceived(Object sender, EndOfCallEventArgs e)
 	{
 		RTPRecordInfo item = (RTPRecordInfo)sender;
+		String ext = item.ext;
+		String peer = item.peer;
 		
 		try
 		{
@@ -188,7 +201,7 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 		}
 		finally
 		{
-			System.out.println(String.format("stream end event : ext:%s, peer:%s", item.ext, item.peer));
+			System.out.println(String.format("stream end event : ext:%s, peer:%s", ext, peer));
 		}
 	}
 }

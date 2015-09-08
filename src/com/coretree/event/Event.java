@@ -15,7 +15,10 @@ public final class Event<TEventArgs extends EventArgs>
 	
 	// Add Event Handler
 	public void addEventHandler(IEventHandler<TEventArgs> handler) {
-		this.observerList.add(handler);
+		if (observerList.indexOf(handler) == -1)
+		{
+			this.observerList.add(handler);			
+		}
 	}
 	
 	// Remove Event Handler

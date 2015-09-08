@@ -119,7 +119,7 @@ public class WaveFileWriter {
     	ch.write(ByteBuffer.wrap(BitConverter.GetBytes((int)(ch.size() - 8)), 0, 4));
     	ch.position(position);
     	
-    	System.out.println(String.format("ch.size() : %d", ch.size()));
+    	// System.out.println(String.format("ch.size() : %d", ch.size()));
     }
     
     private void UpdateDataChunk() throws IOException

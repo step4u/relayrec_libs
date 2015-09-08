@@ -19,7 +19,7 @@ import com.coretree.io.WaveFileWriter;
 import com.coretree.media.MixingAudioInputStream;
 import com.coretree.media.WaveFormat;
 
-public class RTPRecordInfo implements Closeable, Runnable
+public class RTPRecordInfo implements Closeable
 {
 	public Event<EndOfCallEventArgs> EndOfCallEventHandler = new Event<EndOfCallEventArgs>();
 	
@@ -46,9 +46,14 @@ public class RTPRecordInfo implements Closeable, Runnable
 
 	private final int timerInterval = 3000;
 	private final int endtimerInterval = 12000;
+	
+	private String OS = System.getProperty("os.name");
 
 	public RTPRecordInfo(WaveFormat _codec, String savepath, String filename)
 	{
+		this.savepath = savepath;
+		this.filename = filename;
+		
 		// LocalDateTime now = LocalDateTime.now();
 		// long ts = now - (new LocalDateTime(1970, 1, 1, 0, 0, 0, 0));
 		// idx = ts.TotalMilliseconds;
@@ -58,7 +63,17 @@ public class RTPRecordInfo implements Closeable, Runnable
 		
 		try
 		{
-			writer = new WaveFileWriter(String.format("%s/%s", savepath, filename), _codec);
+			String _strformat = "%s/%s";
+			if (OS.contains("Windows"))
+			{
+				_strformat = "%s\\%s";
+			}
+			else
+			{
+				_strformat = "%s/%s";
+			}
+			
+			writer = new WaveFileWriter(String.format(_strformat, savepath, filename), _codec);
 		}
 		catch (FileNotFoundException e)
 		{
@@ -401,7 +416,6 @@ public class RTPRecordInfo implements Closeable, Runnable
 			}
 			catch (IOException e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -500,7 +514,6 @@ public class RTPRecordInfo implements Closeable, Runnable
 			}
 			catch (IOException e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -571,7 +584,6 @@ public class RTPRecordInfo implements Closeable, Runnable
 			}
 			catch (IOException e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -659,7 +671,6 @@ public class RTPRecordInfo implements Closeable, Runnable
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -735,7 +746,7 @@ public class RTPRecordInfo implements Closeable, Runnable
 		@Override
 		public void run()
 		{
-			System.out.println(String.format("previousDataSize : %d, dataSize : %d", previousDataSize, dataSize));
+			// System.out.println(String.format("previousDataSize : %d, dataSize : %d", previousDataSize, dataSize));
 			if (previousDataSize < dataSize)
 			{
 				previousDataSize = dataSize;
@@ -746,7 +757,6 @@ public class RTPRecordInfo implements Closeable, Runnable
 			
 			try
 			{
-				System.out.println("end, close");
 				close();
 				endtimer.cancel();
 				endtimer.purge();
@@ -757,15 +767,10 @@ public class RTPRecordInfo implements Closeable, Runnable
 			}
 			finally
 			{
+				System.out.println("Finished finally");
 				EndOfCallEventHandler.raiseEvent(parent, new EndOfCallEventArgs(""));
 			}
 		}
 
-	}
-
-	@Override
-	public void run()
-	{
-		
 	}
 }
