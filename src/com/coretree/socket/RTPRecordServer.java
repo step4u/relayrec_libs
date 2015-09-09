@@ -102,7 +102,6 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 		{
 			ingInstance = recordIngList.stream().filter(x -> x.ext.equals(rtp.ext)).findFirst().get();
 			ingInstance.Add(rtp);
-			ingInstance.EndOfCallEventHandler.addEventHandler(this);
 		}
 		catch (NoSuchElementException e)
 		{
@@ -164,17 +163,18 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 				RTPRecordInfo recInstance = new RTPRecordInfo(wavformat, String.format(_strformat, _option.saveDirectory, _datepath), _fileName);
 				recInstance.ext = rtp.ext;
 				recInstance.peer = rtp.peer;
-				//recInstance.codec = wavformat;
+				// recInstance.codec = wavformat;
 				// recInstance.idx = ts.TotalMilliseconds;
 				recInstance.savepath = String.format(_strformat, _option.saveDirectory, _datepath);
 				recInstance.filename = _fileName;
 
 				recInstance.Add(rtp);
+				recInstance.EndOfCallEventHandler.addEventHandler(this);
 				
 				w.lock();
 				try
 				{
-					recordIngList.add(recInstance);					
+					recordIngList.add(recInstance);
 				}
 				finally
 				{
