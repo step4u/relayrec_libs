@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketException;
 import java.nio.ByteOrder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,6 +21,7 @@ import com.coretree.models.Options;
 import com.coretree.models.RTPInfo;
 import com.coretree.models.RTPRecordInfo;
 import com.coretree.models.ReceivedRTP;
+import com.coretree.util.Util;
 
 public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEventArgs>
 {
@@ -34,6 +34,7 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 	
 	private Options _option;
 	private String OS = System.getProperty("os.name");
+	// private Thread sockThread = null;
 
 	public RTPRecordServer()
 	{
@@ -70,22 +71,22 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 				rcvRtp.seq = rtpObj.seq;
 				rcvRtp.codec = rtpObj.codec;
 				rcvRtp.isExtension = rtpObj.isExtension;
-				rcvRtp.ext = new String(rtpObj.extension);
-				rcvRtp.peer = new String(rtpObj.peer_number);
+				rcvRtp.ext = rtpObj.extension;
+				rcvRtp.peer = rtpObj.peer_number;
 				rcvRtp.size = rtpObj.size;
 				rcvRtp.buff = rtpObj.voice;
+				
+				String logMsg = String.format("seq:%d, ext:%s, peer:%s, isExtension:%d, size:%d", rcvRtp.seq, rcvRtp.ext, rcvRtp.peer, rcvRtp.isExtension, rcvRtp.size);
+				Util.WriteLog(logMsg, 0);
 
 				StackRtp2Instance(rcvRtp);
 			}
 		}
-		catch (SocketException e)
+		catch (IOException e)
 		{
 			// e.printStackTrace();
 			System.err.println("UDP Port 21010 is occupied.");
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
+			Util.WriteLog(e.toString(), 1);
 		}
 		finally
 		{
@@ -100,13 +101,24 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 
 		try
 		{
-			ingInstance = recordIngList.stream().filter(x -> x.ext.equals(rtp.ext)).findFirst().get();
+			r.lock();
+			try
+			{
+				ingInstance = recordIngList.stream().filter(x -> x.ext.equals(rtp.ext)).findFirst().get();
+			}
+			finally
+			{
+				r.unlock();
+			}
+			
 			ingInstance.Add(rtp);
 		}
-		catch (NoSuchElementException e)
+		catch (NoSuchElementException | NullPointerException e)
 		{
-			if (ingInstance == null)
-			{
+			Util.WriteLog(e.toString(), 1);
+			
+//			if (ingInstance == null)
+//			{
 				WaveFormat wavformat;
 
 				switch (rtp.codec)
@@ -157,30 +169,31 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 				 File _dir = new File(_path);
 				 if (!_dir.exists())
 				 {
-					 boolean result = _dir.mkdir();
+					 // boolean result = _dir.mkdir();
+					 _dir.mkdir();
 				 }
 
-				RTPRecordInfo recInstance = new RTPRecordInfo(wavformat, String.format(_strformat, _option.saveDirectory, _datepath), _fileName);
-				recInstance.ext = rtp.ext;
-				recInstance.peer = rtp.peer;
+				ingInstance = new RTPRecordInfo(wavformat, String.format(_strformat, _option.saveDirectory, _datepath), _fileName);
+				ingInstance.ext = rtp.ext;
+				ingInstance.peer = rtp.peer;
 				// recInstance.codec = wavformat;
 				// recInstance.idx = ts.TotalMilliseconds;
-				recInstance.savepath = String.format(_strformat, _option.saveDirectory, _datepath);
-				recInstance.filename = _fileName;
+				ingInstance.savepath = String.format(_strformat, _option.saveDirectory, _datepath);
+				ingInstance.filename = _fileName;
 
-				recInstance.Add(rtp);
-				recInstance.EndOfCallEventHandler.addEventHandler(this);
+				ingInstance.Add(rtp);
+				ingInstance.EndOfCallEventHandler.addEventHandler(this);
 				
 				w.lock();
 				try
 				{
-					recordIngList.add(recInstance);
+					recordIngList.add(ingInstance);
 				}
 				finally
 				{
 					w.unlock();
 				}
-			}
+//			}
 		}
 	}
 
@@ -195,9 +208,9 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 		{
 			recordIngList.removeIf(x -> x.ext.equals(item.ext));
 		}
-		catch (NullPointerException e1)
+		catch (NullPointerException | UnsupportedOperationException e1)
 		{
-			e1.printStackTrace();
+			Util.WriteLog(e1.toString(), 1);
 		}
 		finally
 		{

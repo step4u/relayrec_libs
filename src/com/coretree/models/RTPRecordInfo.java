@@ -18,6 +18,7 @@ import com.coretree.event.Event;
 import com.coretree.io.WaveFileWriter;
 import com.coretree.media.MixingAudioInputStream;
 import com.coretree.media.WaveFormat;
+import com.coretree.util.Util;
 
 public class RTPRecordInfo implements Closeable
 {
@@ -75,13 +76,10 @@ public class RTPRecordInfo implements Closeable
 			
 			writer = new WaveFileWriter(String.format(_strformat, savepath, filename), _codec);
 		}
-		catch (FileNotFoundException e)
-		{
-			e.printStackTrace();
-		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			// e.printStackTrace();
+			Util.WriteLog(e.toString(), 1);
 		}
 
 		this.InitTimer();
@@ -127,7 +125,8 @@ public class RTPRecordInfo implements Closeable
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				// e.printStackTrace();
+				Util.WriteLog(e.toString(), 1);
 			}
             finally
             {
@@ -254,18 +253,18 @@ public class RTPRecordInfo implements Closeable
 		{
 			itemIn = linin.stream().findFirst().get();
 		}
-		catch (NoSuchElementException e)
+		catch (NoSuchElementException | NullPointerException e)
 		{
-			//itemIn = null;
+			Util.WriteLog(e.toString(), 1);
 		}
 		
 		try
 		{
 			itemOut = linout.stream().findFirst().get();
 		}
-		catch (NoSuchElementException e)
+		catch (NoSuchElementException | NullPointerException e)
 		{
-			//itemOut = null;
+			Util.WriteLog(e.toString(), 1);
 		}
 		
 		DelayedMsec delayedMsec = DelayedMsec.same;
@@ -366,8 +365,10 @@ public class RTPRecordInfo implements Closeable
 					r.unlock();
 				}
 			}
-			catch (NoSuchElementException e)
+			catch (NoSuchElementException | NullPointerException e)
 			{
+				Util.WriteLog(e.toString(), 1);
+				
 				_item0 = new ReceivedRTP();
 				_item0.buff = new byte[332];
 				_item0.seq = seq;
@@ -388,8 +389,10 @@ public class RTPRecordInfo implements Closeable
 					r.unlock();
 				}
 			}
-			catch (NoSuchElementException e)
+			catch (NoSuchElementException | NullPointerException e)
 			{
+				Util.WriteLog(e.toString(), 1);
+				
 				_item1 = new ReceivedRTP();
 				_item1.buff = new byte[332];
 				_item1.seq = seq + 1;
@@ -416,7 +419,8 @@ public class RTPRecordInfo implements Closeable
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				// e.printStackTrace();
+				Util.WriteLog(e.toString(), 1);
 			}
 
 			w.lock();
@@ -465,8 +469,10 @@ public class RTPRecordInfo implements Closeable
 					r.unlock();
 				}
 			}
-			catch (NoSuchElementException e)
+			catch (NoSuchElementException | NullPointerException e)
 			{
+				Util.WriteLog(e.toString(), 1);
+				
 				_item0 = new ReceivedRTP();
 				_item0.buff = new byte[332];
 				_item0.seq = seq;
@@ -487,8 +493,10 @@ public class RTPRecordInfo implements Closeable
 					r.unlock();
 				}
 			}
-			catch (NoSuchElementException e)
+			catch (NoSuchElementException | NullPointerException e)
 			{
+				Util.WriteLog(e.toString(), 1);
+				
 				_item1 = new ReceivedRTP();
 				_item1.buff = new byte[332];
 				_item1.seq = seq;
@@ -514,7 +522,8 @@ public class RTPRecordInfo implements Closeable
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				// e.printStackTrace();
+				Util.WriteLog(e.toString(), 1);
 			}
 
 			w.lock();
@@ -566,8 +575,10 @@ public class RTPRecordInfo implements Closeable
 					r.unlock();
 				}
 			}
-			catch (NoSuchElementException e)
+			catch (NoSuchElementException | NullPointerException e)
 			{
+				Util.WriteLog(e.toString(), 1);
+				
 				_item = new ReceivedRTP();
 				_item.buff = new byte[332];
 				_item.seq = item.seq;
@@ -671,7 +682,8 @@ public class RTPRecordInfo implements Closeable
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			// e.printStackTrace();
+			Util.WriteLog(e.toString(), 1);
 		}
 		
 		audioInputStream1.close();
@@ -693,7 +705,8 @@ public class RTPRecordInfo implements Closeable
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			// e.printStackTrace();
+			Util.WriteLog(e.toString(), 1);
 		}
         
         try
@@ -703,16 +716,11 @@ public class RTPRecordInfo implements Closeable
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			// e.printStackTrace();
+			Util.WriteLog(e.toString(), 1);
 		}
     }
     
-//    private void Timer_Update()
-//    {
-//    	Timer_Elapsed timer_Elapsed = new Timer_Elapsed();
-//    	
-//    }
-
 	@Override
 	public void close() throws IOException
 	{
@@ -763,7 +771,8 @@ public class RTPRecordInfo implements Closeable
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				// e.printStackTrace();
+				Util.WriteLog(e.toString(), 1);
 			}
 			finally
 			{

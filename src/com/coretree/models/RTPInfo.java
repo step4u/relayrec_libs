@@ -5,8 +5,8 @@ import java.nio.ByteOrder;
 import com.coretree.core.SetGetBytes;
 
 public class RTPInfo extends SetGetBytes<Object> {
-	public char[] extension = new char[5];
-	public char[] peer_number = new char[20];
+	public String extension;
+	public String peer_number;
 	public int isExtension;
 	public int codec;
 	public int seq;
@@ -120,9 +120,9 @@ public class RTPInfo extends SetGetBytes<Object> {
 	@Override
 	public void toObject(byte[] rcv) {
 		int tlength = 0;
-		this.extension = (char[])bytes2Object(this.extension, rcv, tlength, 5);
+		this.extension = new String((byte[])bytes2Object(new byte[5], rcv, tlength, 5)).trim();
 		tlength += 5;
-		this.peer_number = (char[])bytes2Object(this.peer_number, rcv, tlength, 20);
+		this.peer_number = new String((byte[])bytes2Object(new byte[20], rcv, tlength, 20)).trim();
 		tlength += 20;
 		tlength += 3;
 		this.isExtension = (int)bytes2Object(this.isExtension, rcv, tlength, 4);
