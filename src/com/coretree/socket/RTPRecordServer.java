@@ -21,6 +21,7 @@ import com.coretree.models.Options;
 import com.coretree.models.RTPInfo;
 import com.coretree.models.RTPRecordInfo;
 import com.coretree.models.ReceivedRTP;
+import com.coretree.util.Finalvars;
 import com.coretree.util.Util;
 
 public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEventArgs>
@@ -76,8 +77,8 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 				rcvRtp.size = rtpObj.size;
 				rcvRtp.buff = rtpObj.voice;
 				
-				String logMsg = String.format("seq:%d, ext:%s, peer:%s, isExtension:%d, size:%d", rcvRtp.seq, rcvRtp.ext, rcvRtp.peer, rcvRtp.isExtension, rcvRtp.size);
-				Util.WriteLog(logMsg, 0);
+				// String logMsg = String.format("seq:%d, ext:%s, peer:%s, isExtension:%d, size:%d", rcvRtp.seq, rcvRtp.ext, rcvRtp.peer, rcvRtp.isExtension, rcvRtp.size);
+				// Util.WriteLog(logMsg, 0);
 
 				StackRtp2Instance(rcvRtp);
 			}
@@ -86,7 +87,7 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 		{
 			// e.printStackTrace();
 			System.err.println("UDP Port 21010 is occupied.");
-			Util.WriteLog(e.toString(), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1001, e.toString()), 1);
 		}
 		finally
 		{
@@ -99,23 +100,16 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 	{
 		RTPRecordInfo ingInstance = null;
 
+		r.lock();
+		w.lock();
 		try
 		{
-			r.lock();
-			try
-			{
-				ingInstance = recordIngList.stream().filter(x -> x.ext.equals(rtp.ext)).findFirst().get();
-			}
-			finally
-			{
-				r.unlock();
-			}
-			
+			ingInstance = recordIngList.stream().filter(x -> x.ext.equals(rtp.ext)).findFirst().get();
 			ingInstance.Add(rtp);
 		}
 		catch (NoSuchElementException | NullPointerException e)
 		{
-			Util.WriteLog(e.toString(), 1);
+			// Util.WriteLog(e.toString(), 1);
 			
 //			if (ingInstance == null)
 //			{
@@ -184,16 +178,13 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 				ingInstance.Add(rtp);
 				ingInstance.EndOfCallEventHandler.addEventHandler(this);
 				
-				w.lock();
-				try
-				{
 					recordIngList.add(ingInstance);
-				}
-				finally
-				{
-					w.unlock();
-				}
 //			}
+		}
+		finally
+		{
+			r.unlock();
+			w.unlock();
 		}
 	}
 
@@ -210,7 +201,7 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 		}
 		catch (NullPointerException | UnsupportedOperationException e1)
 		{
-			Util.WriteLog(e1.toString(), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1002, e1.toString()), 1);
 		}
 		finally
 		{

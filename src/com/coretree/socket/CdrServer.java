@@ -1,10 +1,8 @@
 package com.coretree.socket;
 
-import java.io.CharConversionException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.nio.ByteOrder;
 import com.coretree.models.CDRData;

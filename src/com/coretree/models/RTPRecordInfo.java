@@ -2,7 +2,6 @@ package com.coretree.models;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -18,6 +17,7 @@ import com.coretree.event.Event;
 import com.coretree.io.WaveFileWriter;
 import com.coretree.media.MixingAudioInputStream;
 import com.coretree.media.WaveFormat;
+import com.coretree.util.Finalvars;
 import com.coretree.util.Util;
 
 public class RTPRecordInfo implements Closeable
@@ -79,7 +79,7 @@ public class RTPRecordInfo implements Closeable
 		catch (IOException e)
 		{
 			// e.printStackTrace();
-			Util.WriteLog(e.toString(), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1003, e.toString()), 1);
 		}
 
 		this.InitTimer();
@@ -126,7 +126,7 @@ public class RTPRecordInfo implements Closeable
 			catch (IOException e)
 			{
 				// e.printStackTrace();
-				Util.WriteLog(e.toString(), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1004, e.toString()), 1);
 			}
             finally
             {
@@ -255,7 +255,8 @@ public class RTPRecordInfo implements Closeable
 		}
 		catch (NoSuchElementException | NullPointerException e)
 		{
-			Util.WriteLog(e.toString(), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1005, e.toString()), 1);
+			return;
 		}
 		
 		try
@@ -264,16 +265,17 @@ public class RTPRecordInfo implements Closeable
 		}
 		catch (NoSuchElementException | NullPointerException e)
 		{
-			Util.WriteLog(e.toString(), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1006, e.toString()), 1);
+			return;
 		}
 		
 		DelayedMsec delayedMsec = DelayedMsec.same;
-		if (itemIn == null || itemOut == null)
-		{
-			return;
-		}
-		else
-		{
+//		if (itemIn == null || itemOut == null)
+//		{
+//			return;
+//		}
+//		else
+//		{
 			byte[] mixedbytes = null;
 			if ((itemIn.size - headersize) == 80 && (itemOut.size - headersize) == 160)
 			{
@@ -338,7 +340,7 @@ public class RTPRecordInfo implements Closeable
 					}
 				}
 			}
-		}
+//		}
 	}
 
 	private int headersize = 12;
@@ -353,21 +355,14 @@ public class RTPRecordInfo implements Closeable
 		{
 			int seq = item.seq * 2;
 			
+			r.lock();
 			try
 			{
-				r.lock();
-				try
-				{
-					_item0 = linin.stream().filter(x -> x.seq == seq).findFirst().get();					
-				}
-				finally
-				{
-					r.unlock();
-				}
+				_item0 = linin.stream().filter(x -> x.seq == seq).findFirst().get();					
 			}
 			catch (NoSuchElementException | NullPointerException e)
 			{
-				Util.WriteLog(e.toString(), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1007, e.toString()), 1);
 				
 				_item0 = new ReceivedRTP();
 				_item0.buff = new byte[332];
@@ -376,22 +371,19 @@ public class RTPRecordInfo implements Closeable
 				_item0.ext = item.ext;
 				_item0.peer = item.peer;
 			}
+			finally
+			{
+				r.unlock();
+			}
 			
+			r.lock();
 			try
 			{
-				r.lock();
-				try
-				{
-					_item1 = linin.stream().filter(x -> x.seq == (seq + 1)).findFirst().get();					
-				}
-				finally
-				{
-					r.unlock();
-				}
+				_item1 = linin.stream().filter(x -> x.seq == (seq + 1)).findFirst().get();					
 			}
 			catch (NoSuchElementException | NullPointerException e)
 			{
-				Util.WriteLog(e.toString(), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1008, e.toString()), 1);
 				
 				_item1 = new ReceivedRTP();
 				_item1.buff = new byte[332];
@@ -399,6 +391,10 @@ public class RTPRecordInfo implements Closeable
 				_item1.size = 92;
 				_item1.ext = item.ext;
 				_item1.peer = item.peer;
+			}
+			finally
+			{
+				r.unlock();
 			}
 			
 			final ReceivedRTP __item0 = _item0;
@@ -420,7 +416,7 @@ public class RTPRecordInfo implements Closeable
 			catch (IOException e)
 			{
 				// e.printStackTrace();
-				Util.WriteLog(e.toString(), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1009, e.toString()), 1);
 			}
 
 			w.lock();
@@ -457,21 +453,14 @@ public class RTPRecordInfo implements Closeable
 		{
 			int seq = item.seq * 2;
 			
+			r.lock();
 			try
 			{
-				r.lock();
-				try
-				{
-					_item0 = linout.stream().filter(x -> x.seq == seq).findFirst().get();					
-				}
-				finally
-				{
-					r.unlock();
-				}
+				_item0 = linout.stream().filter(x -> x.seq == seq).findFirst().get();					
 			}
 			catch (NoSuchElementException | NullPointerException e)
 			{
-				Util.WriteLog(e.toString(), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1010, e.toString()), 1);
 				
 				_item0 = new ReceivedRTP();
 				_item0.buff = new byte[332];
@@ -480,22 +469,20 @@ public class RTPRecordInfo implements Closeable
 				_item0.ext = item.ext;
 				_item0.peer = item.peer;
 			}
-			
+			finally
+			{
+				r.unlock();
+			}
+
+
+			r.lock();
 			try
 			{
-				r.lock();
-				try
-				{
-					_item1 = linout.stream().filter(x -> x.seq == seq + 1).findFirst().get();					
-				}
-				finally
-				{
-					r.unlock();
-				}
+				_item1 = linout.stream().filter(x -> x.seq == seq + 1).findFirst().get();					
 			}
 			catch (NoSuchElementException | NullPointerException e)
 			{
-				Util.WriteLog(e.toString(), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1011, e.toString()), 1);
 				
 				_item1 = new ReceivedRTP();
 				_item1.buff = new byte[332];
@@ -503,6 +490,10 @@ public class RTPRecordInfo implements Closeable
 				_item1.size = 92;
 				_item1.ext = item.ext;
 				_item1.peer = item.peer;
+			}
+			finally
+			{
+				r.unlock();
 			}
 			
 			final ReceivedRTP __item0 = _item0;
@@ -523,7 +514,7 @@ public class RTPRecordInfo implements Closeable
 			catch (IOException e)
 			{
 				// e.printStackTrace();
-				Util.WriteLog(e.toString(), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1012, e.toString()), 1);
 			}
 
 			w.lock();
@@ -563,21 +554,14 @@ public class RTPRecordInfo implements Closeable
 			// item1 mix with item2 and write
 			ReceivedRTP _item = null;
 			
+			r.lock();
 			try
 			{
-				r.lock();
-				try
-				{
-					_item = linout.stream().filter(x -> x.seq == item.seq).findFirst().get();					
-				}
-				finally
-				{
-					r.unlock();
-				}
+				_item = linout.stream().filter(x -> x.seq == item.seq).findFirst().get();					
 			}
 			catch (NoSuchElementException | NullPointerException e)
 			{
-				Util.WriteLog(e.toString(), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1013, e.toString()), 1);
 				
 				_item = new ReceivedRTP();
 				_item.buff = new byte[332];
@@ -585,6 +569,10 @@ public class RTPRecordInfo implements Closeable
 				_item.size = item.size;
 				_item.ext = item.ext;
 				_item.peer = item.peer;
+			}
+			finally
+			{
+				r.unlock();
 			}
 			
 			final ReceivedRTP __item = _item;
@@ -683,7 +671,7 @@ public class RTPRecordInfo implements Closeable
 		catch (IOException e)
 		{
 			// e.printStackTrace();
-			Util.WriteLog(e.toString(), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1014, e.toString()), 1);
 		}
 		
 		audioInputStream1.close();
@@ -706,7 +694,7 @@ public class RTPRecordInfo implements Closeable
 		catch (IOException e)
 		{
 			// e.printStackTrace();
-			Util.WriteLog(e.toString(), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1015, e.toString()), 1);
 		}
         
         try
@@ -717,7 +705,7 @@ public class RTPRecordInfo implements Closeable
 		catch (IOException e)
 		{
 			// e.printStackTrace();
-			Util.WriteLog(e.toString(), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1016, e.toString()), 1);
 		}
     }
     
@@ -772,7 +760,7 @@ public class RTPRecordInfo implements Closeable
 			catch (IOException e)
 			{
 				// e.printStackTrace();
-				Util.WriteLog(e.toString(), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1017, e.toString()), 1);
 			}
 			finally
 			{
