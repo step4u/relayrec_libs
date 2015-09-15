@@ -77,8 +77,8 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 				rcvRtp.size = rtpObj.size;
 				rcvRtp.buff = rtpObj.voice;
 				
-				// String logMsg = String.format("seq:%d, ext:%s, peer:%s, isExtension:%d, size:%d", rcvRtp.seq, rcvRtp.ext, rcvRtp.peer, rcvRtp.isExtension, rcvRtp.size);
-				// Util.WriteLog(logMsg, 0);
+				String logMsg = String.format("seq:%d, ext:%s, peer:%s, isExtension:%d, size:%d", rcvRtp.seq, rcvRtp.ext, rcvRtp.peer, rcvRtp.isExtension, rcvRtp.size);
+				Util.WriteLog(logMsg, 0);
 
 				StackRtp2Instance(rcvRtp);
 			}
@@ -101,7 +101,6 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 		RTPRecordInfo ingInstance = null;
 
 		r.lock();
-		w.lock();
 		try
 		{
 			ingInstance = recordIngList.stream().filter(x -> x.ext.equals(rtp.ext)).findFirst().get();
@@ -178,13 +177,20 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 				ingInstance.Add(rtp);
 				ingInstance.EndOfCallEventHandler.addEventHandler(this);
 				
+//				w.lock();
+//				try
+//				{
 					recordIngList.add(ingInstance);
+//				}
+//				finally
+//				{
+//					w.unlock();
+//				}
 //			}
 		}
 		finally
 		{
 			r.unlock();
-			w.unlock();
 		}
 	}
 
