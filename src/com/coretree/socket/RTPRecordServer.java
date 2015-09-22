@@ -34,14 +34,22 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 	private List<RTPRecordInfo> recordIngList;
 	
 	private Options _option;
+	private ByteOrder defaultbyteorder = ByteOrder.BIG_ENDIAN;
 	private String OS = System.getProperty("os.name");
 	// private Thread sockThread = null;
 
 	public RTPRecordServer()
 	{
+		this(ByteOrder.BIG_ENDIAN);
+	}
+	
+	public RTPRecordServer(ByteOrder byteorder)
+	{
 		recordIngList = new ArrayList<RTPRecordInfo>();
 		_option = new Options();
 		_option.saveDirectory = "./";
+		
+		defaultbyteorder = byteorder;
 
 		InitiateSocket();
 	}
@@ -61,7 +69,8 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 				serverSocket.receive(receivePacket);
 				byte[] rcvbytes = receivePacket.getData();
-				RTPInfo rtpObj = new RTPInfo(rcvbytes, ByteOrder.BIG_ENDIAN);
+				// RTPInfo rtpObj = new RTPInfo(rcvbytes, ByteOrder.BIG_ENDIAN);
+				RTPInfo rtpObj = new RTPInfo(rcvbytes, defaultbyteorder);
 
 				int nDataSize = rtpObj.size - 12;
 
@@ -87,7 +96,7 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 		{
 			// e.printStackTrace();
 			System.err.println("UDP Port 21010 is occupied.");
-			Util.WriteLog(String.format(Finalvars.ErrHeader, 1001, e.toString()), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1001, e.getMessage()), 1);
 		}
 		finally
 		{
@@ -108,7 +117,7 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 		}
 		catch (NoSuchElementException | NullPointerException e)
 		{
-			// Util.WriteLog(e.toString(), 1);
+			// Util.WriteLog(e.getMessage(), 1);
 			
 //			if (ingInstance == null)
 //			{
@@ -207,7 +216,7 @@ public class RTPRecordServer extends Thread implements IEventHandler<EndOfCallEv
 		}
 		catch (NullPointerException | UnsupportedOperationException e1)
 		{
-			Util.WriteLog(String.format(Finalvars.ErrHeader, 1002, e1.toString()), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1002, e1.getMessage()), 1);
 		}
 		finally
 		{

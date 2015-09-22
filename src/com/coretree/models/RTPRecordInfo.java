@@ -79,7 +79,7 @@ public class RTPRecordInfo implements Closeable
 		catch (IOException e)
 		{
 			// e.printStackTrace();
-			Util.WriteLog(String.format(Finalvars.ErrHeader, 1003, e.toString()), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1003, e.getMessage()), 1);
 		}
 
 		this.InitTimer();
@@ -126,7 +126,7 @@ public class RTPRecordInfo implements Closeable
 			catch (IOException e)
 			{
 				// e.printStackTrace();
-				Util.WriteLog(String.format(Finalvars.ErrHeader, 1004, e.toString()), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1004, e.getMessage()), 1);
 			}
             finally
             {
@@ -255,7 +255,7 @@ public class RTPRecordInfo implements Closeable
 		}
 		catch (NoSuchElementException | NullPointerException e)
 		{
-			Util.WriteLog(String.format(Finalvars.ErrHeader, 1005, e.toString()), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1005, e.getMessage()), 1);
 			return;
 		}
 		
@@ -265,7 +265,7 @@ public class RTPRecordInfo implements Closeable
 		}
 		catch (NoSuchElementException | NullPointerException e)
 		{
-			Util.WriteLog(String.format(Finalvars.ErrHeader, 1006, e.toString()), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1006, e.getMessage()), 1);
 			return;
 		}
 		
@@ -362,7 +362,7 @@ public class RTPRecordInfo implements Closeable
 			}
 			catch (NoSuchElementException | NullPointerException e)
 			{
-				Util.WriteLog(String.format(Finalvars.ErrHeader, 1007, e.toString()), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1007, e.getMessage()), 1);
 				
 				_item0 = new ReceivedRTP();
 				_item0.buff = new byte[332];
@@ -383,7 +383,7 @@ public class RTPRecordInfo implements Closeable
 			}
 			catch (NoSuchElementException | NullPointerException e)
 			{
-				Util.WriteLog(String.format(Finalvars.ErrHeader, 1008, e.toString()), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1008, e.getMessage()), 1);
 				
 				_item1 = new ReceivedRTP();
 				_item1.buff = new byte[332];
@@ -416,7 +416,7 @@ public class RTPRecordInfo implements Closeable
 			catch (IOException e)
 			{
 				// e.printStackTrace();
-				Util.WriteLog(String.format(Finalvars.ErrHeader, 1009, e.toString()), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1009, e.getMessage()), 1);
 			}
 
 			w.lock();
@@ -460,7 +460,7 @@ public class RTPRecordInfo implements Closeable
 			}
 			catch (NoSuchElementException | NullPointerException e)
 			{
-				Util.WriteLog(String.format(Finalvars.ErrHeader, 1010, e.toString()), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1010, e.getMessage()), 1);
 				
 				_item0 = new ReceivedRTP();
 				_item0.buff = new byte[332];
@@ -482,7 +482,7 @@ public class RTPRecordInfo implements Closeable
 			}
 			catch (NoSuchElementException | NullPointerException e)
 			{
-				Util.WriteLog(String.format(Finalvars.ErrHeader, 1011, e.toString()), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1011, e.getMessage()), 1);
 				
 				_item1 = new ReceivedRTP();
 				_item1.buff = new byte[332];
@@ -514,7 +514,7 @@ public class RTPRecordInfo implements Closeable
 			catch (IOException e)
 			{
 				// e.printStackTrace();
-				Util.WriteLog(String.format(Finalvars.ErrHeader, 1012, e.toString()), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1012, e.getMessage()), 1);
 			}
 
 			w.lock();
@@ -561,7 +561,7 @@ public class RTPRecordInfo implements Closeable
 			}
 			catch (NoSuchElementException | NullPointerException e)
 			{
-				Util.WriteLog(String.format(Finalvars.ErrHeader, 1013, e.toString()), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1013, e.getMessage()), 1);
 				
 				_item = new ReceivedRTP();
 				_item.buff = new byte[332];
@@ -671,7 +671,7 @@ public class RTPRecordInfo implements Closeable
 		catch (IOException e)
 		{
 			// e.printStackTrace();
-			Util.WriteLog(String.format(Finalvars.ErrHeader, 1014, e.toString()), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1014, e.getMessage()), 1);
 		}
 		
 		audioInputStream1.close();
@@ -694,7 +694,7 @@ public class RTPRecordInfo implements Closeable
 		catch (IOException e)
 		{
 			// e.printStackTrace();
-			Util.WriteLog(String.format(Finalvars.ErrHeader, 1015, e.toString()), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1015, e.getMessage()), 1);
 		}
         
         try
@@ -705,7 +705,7 @@ public class RTPRecordInfo implements Closeable
 		catch (IOException e)
 		{
 			// e.printStackTrace();
-			Util.WriteLog(String.format(Finalvars.ErrHeader, 1016, e.toString()), 1);
+			Util.WriteLog(String.format(Finalvars.ErrHeader, 1016, e.getMessage()), 1);
 		}
     }
     
@@ -713,6 +713,19 @@ public class RTPRecordInfo implements Closeable
 	public void close() throws IOException
 	{
 		this.writer.close();
+
+		if (timer != null)
+		{
+			timer.cancel();
+			timer = null;
+		}
+		
+		if (endtimer != null)
+		{
+			endtimer.cancel();
+			endtimer = null;
+		}
+		
 		listIn.clear();
 		listOut.clear();
 	}
@@ -760,7 +773,7 @@ public class RTPRecordInfo implements Closeable
 			catch (IOException e)
 			{
 				// e.printStackTrace();
-				Util.WriteLog(String.format(Finalvars.ErrHeader, 1017, e.toString()), 1);
+				Util.WriteLog(String.format(Finalvars.ErrHeader, 1017, e.getMessage()), 1);
 			}
 			finally
 			{

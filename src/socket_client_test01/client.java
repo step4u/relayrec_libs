@@ -2,16 +2,25 @@ package socket_client_test01;
 
 import java.io.*;
 import java.net.*;
+import java.nio.ByteOrder;
 
 import com.coretree.io.WaveFileWriter;
 import com.coretree.media.WaveFormat;
 import com.coretree.models.ReqUserInfo2;
+import com.coretree.util.*;
+import com.coretree.socket.*;
 
 public class client {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 		System.out.println("line 1");
+		
+		System.out.println(String.format("number : %d", (byte)Const4pbx.UC_SMS_TRANSFER_CANCEL_RES));
+		
+		UcServer uc = new UcServer("14.63.166.98", 31001, 1, ByteOrder.BIG_ENDIAN);
+		uc.start();
+		// uc.Send(Const4pbx.UC_REGISTER_REQ);
 		
 //		ReqUserInfo obj = new ReqUserInfo();
 //		obj.cmd = 100;
@@ -131,7 +140,7 @@ public class client {
 		
 		
 		
-//		// �׽�Ʈ  waveformat
+//		// �׽�Ʈ  waveformat
 //		WaveFormat waveformat = WaveFormat.CreateALawFormat(8000,  1);
 //		WaveFileWriter writer = new WaveFileWriter("123456789.wav", waveformat);
 //		
