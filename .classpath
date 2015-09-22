@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="lib" path="D:/dev/Java/java-getopt-1.0.14.jar"/>
-	<classpathentry kind="lib" path="D:/dev/Java/tritonus_share-0.3.6.jar"/>
+	<classpathentry kind="lib" path="D:/dev/workspaces/workspace_spring/relayrec_libs/java-getopt-1.0.14.jar"/>
+	<classpathentry kind="lib" path="D:/dev/workspaces/workspace_spring/relayrec_libs/tritonus_share-0.3.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

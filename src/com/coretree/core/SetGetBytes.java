@@ -26,16 +26,22 @@ public abstract class SetGetBytes<T> {
 		
 		switch (classtype)
 		{
-			case "java.lang.Integer":
-				b = ByteBuffer.allocate(4);
+			case "java.lang.Byte":
+				b = ByteBuffer.allocate(1);
 				b.order(byteorder);
-				b.putInt((int)obj);
+				b.put((byte)obj);
 				outbytes = b.array();
 				break;
 			case "java.lang.Short":
 				b = ByteBuffer.allocate(2);
 				b.order(byteorder);
 				b.putShort((short)obj);
+				outbytes = b.array();
+				break;
+			case "java.lang.Integer":
+				b = ByteBuffer.allocate(4);
+				b.order(byteorder);
+				b.putInt((int)obj);
 				outbytes = b.array();
 				break;
 			case "java.lang.Long":
@@ -91,13 +97,17 @@ public abstract class SetGetBytes<T> {
 
 		switch (classtype)
 		{
-			case "java.lang.Integer":
+			case "java.lang.Byte":
 				b.order(byteorder);
-				o = b.getInt();
+				o = b.get();
 				break;
 			case "java.lang.Short":
 				b.order(byteorder);
 				o = b.getShort();
+				break;
+			case "java.lang.Integer":
+				b.order(byteorder);
+				o = b.getInt();
 				break;
 			case "java.lang.Long":
 				b.order(byteorder);
