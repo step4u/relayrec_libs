@@ -164,6 +164,7 @@ public class UcServer implements Runnable
 			case Const4pbx.UC_MAKE_CALL_REQ:
 				data.type = Const4pbx.UC_TYPE_GROUPWARE;
 				data.extension = ext;
+				data.caller = ext;
 				data.callee = peer;
 				break;
 		}
